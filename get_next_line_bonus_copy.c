@@ -1,4 +1,4 @@
-#include "get_next_line_copy.h"
+#include "get_next_line_bonus.h"
 
 char	*extract_line(char *reiner, char *line)
 {
@@ -58,48 +58,26 @@ char	*read_line(int fd, char *reiner, char *buffer)
 char	*get_next_line(int fd)
 {
 	char		*buffer;
-	static char	*reiner;
+	static char	*reiner[MAX_FD];
 	char		*line;
 
 	line = NULL;
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
-		return (free(reiner), reiner = NULL, NULL);
+		return (free(reiner[fd]), reiner[fd] = NULL, NULL);
 	buffer = malloc(BUFFER_SIZE + 1);
 	if (!buffer)
 	{
-		if (reiner)
-			free(reiner); 
-		return (reiner = NULL, NULL);
+		if (reiner[fd])
+			free(reiner[fd]); 
+		return (reiner[fd] = NULL, NULL);
 	}
-	reiner = read_line(fd, reiner, buffer);
+	reiner[fd] = read_line(fd, reiner[fd], buffer);
 	buffer = NULL;
-	if (!reiner)
+	if (!reiner[fd])
 		return (NULL);
-	line = extract_line(reiner, line);
+	line = extract_line(reiner[fd], line);
 	if (!line)
-		return (free(reiner), reiner = NULL, NULL);
-	reiner = rest_of_line(reiner);
+		return (free(reiner[fd]), reiner[fd] = NULL, NULL);
+	reiner[fd] = rest_of_line(reiner[fd]);
 	return (line);
-}
-
- void f()
-{
-     system("leaks a.out");
-}
-
-int main(void)
-{
-	atexit(f);
-	int fd = open("test.txt", O_RDONLY);
-	char *line;
-	int i  = 0;
-	while((line = get_next_line(fd)))
-  {
-    // line = get_next_line(fd);
-		printf("%s",line);
-		i++;
-    // puts("lol");
-    free(line);
-  }
-	close(fd);
 }
